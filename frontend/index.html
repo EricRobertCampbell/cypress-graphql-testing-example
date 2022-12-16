@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<script>
+			const GRAPHQL_ENDPOINT = "http://localhost:4000/graphql";
+			const appendTask = ({ task, complete }) => {
+				const label = document.createElement("label");
+				const check = document.createElement("input");
+				check.type = "checkbox";
+				check.id = task;
+				check.checked = complete;
+				label.appendChild(check);
+				const text = document.createTextNode(task);
+				label.appendChild(text);
+				document.getElementById("todos").appendChild(label);
+				document
+					.getElementById("todos")
+					.appendChild(document.createElement("br"));
+			};
+			const makeGraphqlQuery = async (body) => {
+				const response = await fetch(GRAPHQL_ENDPOINT, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Accept: "application/json",
+					},
+					body: JSON.stringify(body),
+				});
+				const json = await response.json();
+				return json;
+			};
+			const makeInitialTodosQuery = async () => {
+				const json = await makeGraphqlQuery({
+					query: "query todos { todos {task complete} }",
+					operationName: "todos",
+				});
+				json.data.todos.forEach(appendTask);
+			};
+			const brokenGetAdditionalTodos = () => {
+				console.log("Nothing happened :(");
+			};
+			const setup = () => {
+				document
+					.getElementById("get-todos")
+					.addEventListener("click", makeInitialTodosQuery);
+				document
+					.getElementById("dont-get-todos")
+					.addEventListener("click", brokenGetAdditionalTodos);
+			};
+		</script>
+	</head>
+	<body onload="setup()">
+		<h1>Todos</h1>
+		<section id="todos"></section>
+		<button id="get-todos" onclick="brokenGetAdditionalTodos()">
+			Get Todos
+		</button>
+		<button id="dont-get-todos" onclick="brokenGetAdditionalTodos()">
+			Don't Get Additional Todos
+		</button>
+	</body>
+</html>
